@@ -10,8 +10,12 @@ const AdminRoute = () => {
     user = JSON.parse(userString);
   }
 
-  // Điều kiện: Phải có Token VÀ Role phải là ADMIN
-  if (token && user && user.role === "ROLE_ADMIN") {
+  // Điều kiện: Phải có Token VÀ Role phải là ADMIN hoặc EMPLOYEE
+  if (
+    token &&
+    user &&
+    (user.role === "ROLE_ADMIN" || user.role === "ROLE_EMPLOYEE")
+  ) {
     return <Outlet />; // Cho phép đi tiếp
   } else {
     return <Navigate to="/" replace />; // Đá về trang chủ nếu không đủ quyền

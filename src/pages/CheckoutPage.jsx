@@ -7,11 +7,14 @@ import { useCart } from "../context/CartContext";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { formatCurrency } from "../utils/formatter";
+import { useToast } from "../context/ToastContext";
 
 const CheckoutPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { refreshCartCount } = useCart(); // Để cập nhật lại số giỏ hàng sau khi mua thành công
+
+  const { addToast } = useToast();
 
   // Lấy danh sách sản phẩm được truyền từ trang Cart
   const itemsToCheckout = location.state?.items || [];
@@ -20,6 +23,7 @@ const CheckoutPage = () => {
   const [selectedAddressId, setSelectedAddressId] = useState(null);
   const [note, setNote] = useState("");
   const [loading, setLoading] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState("COD");
 
   // Nếu người dùng vào thẳng link /checkout mà không qua giỏ hàng -> Đuổi về
   useEffect(() => {
@@ -53,7 +57,7 @@ const CheckoutPage = () => {
 
   const handlePlaceOrder = async () => {
     if (!selectedAddressId) {
-      alert("Vui lòng thêm/chọn địa chỉ nhận hàng!");
+      addToast("Vui lòng thêm/chọn địa chỉ nhận hàng!", "error");
       return;
     }
 
@@ -63,20 +67,38 @@ const CheckoutPage = () => {
         addressId: selectedAddressId,
         cartItemIds: itemsToCheckout.map((item) => item.id),
         customerNote: note,
+        paymentMethod: paymentMethod,
       };
 
-      await orderService.createOrder(payload);
+      const orderResponse = await orderService.createOrder(payload);
 
-      alert("Đặt hàng thành công!");
+      if (paymentMethod === "VNPAY") {
+        // Tạo URL thanh toán VNPay
+        const vnpayPayload = {
+          orderId: orderResponse.data.orderId,
+          amount: orderResponse.data.totalAmount,
+          orderInfo: `Thanh toan don hang ${orderResponse.data.orderId}`,
+        };
 
-      // Cập nhật lại số lượng trên Navbar (vì các món đã mua sẽ bị xóa khỏi giỏ)
-      refreshCartCount();
+        const vnpayResponse = await orderService.createVNPayPayment(
+          vnpayPayload
+        );
 
-      // Chuyển hướng đến trang Profile -> Tab Đơn mua
-      navigate("/profile");
+        // Redirect đến VNPay
+        window.location.href = vnpayResponse.data.paymentUrl;
+      } else {
+        // COD: Chuyển đến trang profile
+        addToast("Đặt hàng thành công!", "success");
+
+        // Cập nhật lại số lượng trên Navbar (vì các món đã mua sẽ bị xóa khỏi giỏ)
+        refreshCartCount();
+
+        // Chuyển hướng đến trang Profile -> Tab Đơn mua
+        navigate("/profile");
+      }
     } catch (error) {
       console.error(error);
-      alert(error.response?.data?.message || "Đặt hàng thất bại.");
+      addToast(error.response?.data?.message || "Đặt hàng thất bại.", "error");
     } finally {
       setLoading(false);
     }
@@ -139,6 +161,59 @@ const CheckoutPage = () => {
                   </Link>
                 </div>
               )}
+            </div>
+
+            {/* Phương thức thanh toán */}
+            <div className="bg-white p-6 rounded-lg shadow-sm">
+              <h3 className="text-lg font-bold text-amber-900 mb-4 flex items-center gap-2">
+                <span className="text-xl">💳</span> Phương Thức Thanh Toán
+              </h3>
+
+              <div className="space-y-3">
+                <label className="flex items-center p-4 border rounded-lg cursor-pointer transition hover:bg-gray-50">
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    value="COD"
+                    checked={paymentMethod === "COD"}
+                    onChange={(e) => setPaymentMethod(e.target.value)}
+                    className="mr-3 accent-amber-600"
+                  />
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">🚚</span>
+                    <div>
+                      <div className="font-medium text-gray-800">
+                        Thanh toán khi nhận hàng (COD)
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        Thanh toán bằng tiền mặt khi nhận hàng
+                      </div>
+                    </div>
+                  </div>
+                </label>
+
+                <label className="flex items-center p-4 border rounded-lg cursor-pointer transition hover:bg-gray-50">
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    value="VNPAY"
+                    checked={paymentMethod === "VNPAY"}
+                    onChange={(e) => setPaymentMethod(e.target.value)}
+                    className="mr-3 accent-amber-600"
+                  />
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">💳</span>
+                    <div>
+                      <div className="font-medium text-gray-800">
+                        Thanh toán online (VNPay)
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        Thanh toán qua VNPay - An toàn và tiện lợi
+                      </div>
+                    </div>
+                  </div>
+                </label>
+              </div>
             </div>
 
             {/* 2. Danh sách sản phẩm */}
@@ -222,7 +297,11 @@ const CheckoutPage = () => {
                     : "bg-amber-600 hover:bg-amber-700 hover:shadow-amber-500/50"
                 }`}
               >
-                {loading ? "Đang xử lý..." : "ĐẶT HÀNG"}
+                {loading
+                  ? "Đang xử lý..."
+                  : paymentMethod === "VNPAY"
+                  ? "THANH TOÁN VNPAY"
+                  : "ĐẶT HÀNG"}
               </button>
 
               <p className="text-xs text-center text-gray-400 mt-4">

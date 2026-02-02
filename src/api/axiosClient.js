@@ -1,13 +1,12 @@
 import axios from "axios";
 
 const axiosClient = axios.create({
-  baseURL: "http://localhost:1234/api", // URL Backend của bạn
+  baseURL: "http://localhost:1234/api", // URL Backend
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-// Có thể thêm Interceptor ở đây để tự động gắn Token sau này
 // Interceptor cho Request: Tự động gắn Token vào Header
 axiosClient.interceptors.request.use(
   async (config) => {
@@ -22,7 +21,7 @@ axiosClient.interceptors.request.use(
   }
 );
 
-// Interceptor cho Response: Xử lý lỗi 401 (Hết hạn token) - Nâng cao (Có thể làm sau)
+// Interceptor cho Response: Xử lý lỗi 401 (Hết hạn token)
 
 axiosClient.interceptors.response.use(
   (response) => {

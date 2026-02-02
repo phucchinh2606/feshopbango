@@ -1,8 +1,15 @@
 import axiosClient from "../api/axiosClient";
 
 const productService = {
+  // Trong productService.js
   getAll: (params) => {
-    return axiosClient.get("/products", { params });
+    // Nếu params chưa có sort, bạn có thể thêm mặc định ở đây
+    return axiosClient.get("/products", {
+      params: {
+        ...params,
+        sort: "createdAt,desc", // Đảm bảo Spring nhận diện được dấu phẩy để tách
+      },
+    });
   },
 
   getByCategory: (categoryId) => {

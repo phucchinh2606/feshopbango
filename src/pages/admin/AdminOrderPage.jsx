@@ -8,8 +8,10 @@ import {
 } from "react-icons/fa";
 import orderService from "../../services/orderService";
 import { formatCurrency } from "../../utils/formatter";
+import { useToast } from "../../context/ToastContext";
 
 const AdminOrderPage = () => {
+  const { addToast } = useToast();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -82,7 +84,10 @@ const AdminOrderPage = () => {
       selectedOrder.status === "DELIVERED" ||
       selectedOrder.status === "CANCELLED"
     ) {
-      alert("Đơn hàng đã hoàn tất hoặc đã hủy, không thể thay đổi trạng thái.");
+      addToast(
+        "Đơn hàng đã hoàn tất hoặc đã hủy, không thể thay đổi trạng thái.",
+        "error"
+      );
       return;
     }
 
@@ -94,12 +99,13 @@ const AdminOrderPage = () => {
     setUpdating(true);
     try {
       await orderService.updateStatus(selectedOrder.orderId, newStatus);
-      alert("Cập nhật trạng thái thành công!");
+      addToast("Cập nhật trạng thái thành công!", "success");
       setShowModal(false);
       fetchOrders(); // Tải lại danh sách mới
     } catch (error) {
-      alert(
-        "Lỗi cập nhật: " + (error.response?.data?.message || error.message)
+      addToast(
+        "Lỗi cập nhật: " + (error.response?.data?.message || error.message),
+        "error"
       );
     } finally {
       setUpdating(false);

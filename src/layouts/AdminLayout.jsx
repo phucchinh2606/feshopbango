@@ -7,11 +7,16 @@ import {
   FaSignOutAlt,
   FaChartBar,
   FaHome,
+  FaUsers,
 } from "react-icons/fa";
 import authService from "../services/authService";
 
 const AdminLayout = () => {
   const navigate = useNavigate();
+
+  // Lấy role từ localStorage
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const userRole = user.role;
 
   const handleLogout = async () => {
     try {
@@ -33,30 +38,48 @@ const AdminLayout = () => {
         </div>
 
         <nav className="flex-grow p-4 space-y-2">
-          <Link
-            to="/admin"
-            className="flex items-center gap-3 px-4 py-3 hover:bg-gray-800 rounded transition text-gray-300 hover:text-white"
-          >
-            <FaChartBar /> Thống kê
-          </Link>
+          {userRole === "ROLE_ADMIN" && (
+            <Link
+              to="/admin"
+              className="flex items-center gap-3 px-4 py-3 hover:bg-gray-800 rounded transition text-gray-300 hover:text-white"
+            >
+              <FaChartBar /> Thống kê
+            </Link>
+          )}
           <Link
             to="/admin/categories"
             className="flex items-center gap-3 px-4 py-3 hover:bg-gray-800 rounded transition text-gray-300 hover:text-white"
           >
             <FaBox /> Quản lý Danh mục
           </Link>
-          <Link
-            to="/admin/products"
-            className="flex items-center gap-3 px-4 py-3 hover:bg-gray-800 rounded transition text-gray-300 hover:text-white"
-          >
-            <FaClipboardList /> Quản lý Sản phẩm
-          </Link>
-          <Link
-            to="/admin/orders"
-            className="flex items-center gap-3 px-4 py-3 hover:bg-gray-800 rounded transition text-gray-300 hover:text-white"
-          >
-            <FaUserFriends /> Quản lý Đơn hàng
-          </Link>
+            <Link
+              to="/admin/products"
+              className="flex items-center gap-3 px-4 py-3 hover:bg-gray-800 rounded transition text-gray-300 hover:text-white"
+            >
+              <FaClipboardList /> Quản lý Sản phẩm
+            </Link>
+            <Link
+              to="/admin/news"
+              className="flex items-center gap-3 px-4 py-3 hover:bg-gray-800 rounded transition text-gray-300 hover:text-white"
+            >
+              <FaClipboardList /> Quản lý Tin tức
+            </Link>
+          {userRole === "ROLE_ADMIN" && (
+            <>
+              <Link
+                to="/admin/orders"
+                className="flex items-center gap-3 px-4 py-3 hover:bg-gray-800 rounded transition text-gray-300 hover:text-white"
+              >
+                <FaUserFriends /> Quản lý Đơn hàng
+              </Link>
+              <Link
+                to="/admin/users"
+                className="flex items-center gap-3 px-4 py-3 hover:bg-gray-800 rounded transition text-gray-300 hover:text-white"
+              >
+                <FaUsers /> Quản lý Người dùng
+              </Link>
+            </>
+          )}
 
           <div className="border-t border-gray-700 my-4"></div>
 

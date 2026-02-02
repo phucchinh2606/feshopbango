@@ -6,14 +6,28 @@ const categoryService = {
   },
   // 👇 Các hàm dành cho Admin 👇
 
-  // Thêm mới
+  // Thêm mới (với ảnh)
   create: (data) => {
-    return axiosClient.post("/categories", data);
+    // data có thể là FormData (với file) hoặc object (chỉ tên)
+    const config = {};
+    if (data instanceof FormData) {
+      config.headers = {
+        "Content-Type": "multipart/form-data",
+      };
+    }
+    return axiosClient.post("/categories", data, config);
   },
 
-  // Cập nhật
+  // Cập nhật (với ảnh)
   update: (id, data) => {
-    return axiosClient.put(`/categories/${id}`, data);
+    // data có thể là FormData (với file) hoặc object (chỉ tên)
+    const config = {};
+    if (data instanceof FormData) {
+      config.headers = {
+        "Content-Type": "multipart/form-data",
+      };
+    }
+    return axiosClient.put(`/categories/${id}`, data, config);
   },
 
   // Xóa

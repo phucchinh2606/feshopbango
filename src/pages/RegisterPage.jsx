@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import authService from "../services/authService";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import { useToast } from "../context/ToastContext";
 
 const RegisterPage = () => {
   const navigate = useNavigate();
@@ -15,6 +16,8 @@ const RegisterPage = () => {
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const { addToast } = useToast();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -42,7 +45,7 @@ const RegisterPage = () => {
 
     try {
       await authService.register(dataToSend);
-      alert("Đăng ký thành công! Vui lòng đăng nhập.");
+      addToast("Đăng ký thành công! Vui lòng đăng nhập.", "success");
       navigate("/login");
     } catch (err) {
       console.error(err);

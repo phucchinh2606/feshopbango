@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import authService from "../services/authService";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import { useToast } from "../context/ToastContext";
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -12,6 +13,8 @@ const LoginPage = () => {
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const { addToast } = useToast();
 
   // Xử lý thay đổi input
   const handleChange = (e) => {
@@ -43,13 +46,15 @@ const LoginPage = () => {
         })
       );
 
-      alert("Đăng nhập thành công!");
+      addToast("Đăng nhập thành công!", "success");
 
       // 3. 👇 LOGIC ĐIỀU HƯỚNG DỰA TRÊN ROLE 👇
       if (response.data.userRole === "ROLE_ADMIN") {
-        navigate("/admin"); // Nếu là Admin -> Vào trang quản trị
+        navigate("/admin"); // Admin -> Vào trang thống kê
+      } else if (response.data.userRole === "ROLE_EMPLOYEE") {
+        navigate("/admin/products"); // Employee -> Vào trang quản lý sản phẩm
       } else {
-        navigate("/"); // Nếu là User -> Về trang chủ
+        navigate("/"); // User -> Về trang chủ
       }
 
       // 4. Reload nhẹ để cập nhật Navbar (nếu Navbar đọc từ localStorage)

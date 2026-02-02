@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import { FaStar } from "react-icons/fa";
 import reviewService from "../services/reviewService";
+import { useToast } from "../context/ToastContext";
 
 const ReviewForm = ({ productId, onReviewSuccess }) => {
+  const { addToast } = useToast();
   const [rating, setRating] = useState(0); // Số sao đã chọn
   const [hover, setHover] = useState(0); // Số sao khi di chuột qua
   const [comment, setComment] = useState("");
@@ -35,23 +37,33 @@ const ReviewForm = ({ productId, onReviewSuccess }) => {
       // 3. Thành công -> Reset form & báo cho cha biết
       setRating(0);
       setComment("");
-      alert("Cảm ơn bạn đã đánh giá sản phẩm!");
+      addToast("Cảm ơn bạn đã đánh giá sản phẩm!", "success");
 
       if (onReviewSuccess) {
         onReviewSuccess(); // Gọi hàm reload lại danh sách review
       }
     } catch (err) {
-      console.error(err);
-      // 4. Xử lý lỗi từ Backend
-      if (err.response && err.response.status === 403) {
+      // ⭐️ LOGIC BẮT LỖI MỚI
+      const responseError = err.response?.data;
+
+      // Giả định ErrorCode 9002 là REVIEW_ALREADY_EXISTED
+      if (responseError?.errorCode === 9002) {
+        setError("Lỗi: Bạn đã đánh giá sản phẩm này rồi.");
+      }
+      // Giả định ErrorCode 9003 là REVIEW_NOT_ALLOWED
+      else if (responseError?.errorCode === 9003) {
         setError(
-          "Bạn chỉ được đánh giá sau khi đã mua và nhận hàng thành công!"
-        );
-      } else {
-        setError(
-          err.response?.data?.message || "Có lỗi xảy ra khi gửi đánh giá."
+          "Lỗi: Bạn chưa mua sản phẩm này hoặc đơn hàng chưa được giao thành công."
         );
       }
+      // Các lỗi khác (400, 500)
+      else if (responseError?.message) {
+        setError(responseError.message);
+      } else {
+        setError("Đã xảy ra lỗi khi gửi đánh giá.");
+      }
+
+      console.error("Lỗi gửi review:", err);
     } finally {
       setLoading(false);
     }
