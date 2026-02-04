@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import heroImage1 from "../../../img/quangcao1.jpg";
-import heroImage2 from "../../../img/quangcao2.jpg";
-import heroImage3 from "../../../img/quangcao3.jpg";
-import heroImage4 from "../../../img/quangcao4.jpg";
+import heroImage1 from "../../public/quangcao1.jpg";
+import heroImage2 from "../../public/quangcao2.jpg";
+import heroImage3 from "../../public/quangcao3.jpg";
+import heroImage4 from "../../public/quangcao4.jpg";
 
 const HeroSection = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -15,12 +15,7 @@ const HeroSection = () => {
     "🛠️ NHẬN ĐẶT HÀNG THEO YÊU CẦU - THIẾT KẾ RIÊNG BIỆT",
   ];
 
-  const heroBanners = [
-    heroImage1,
-    heroImage2,
-    heroImage3,
-    heroImage4,
-  ];
+  const heroBanners = [heroImage1, heroImage2, heroImage3, heroImage4];
 
   useEffect(() => {
     const interval = setInterval(() => {
